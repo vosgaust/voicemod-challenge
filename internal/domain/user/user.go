@@ -1,0 +1,235 @@
+package user
+
+import (
+	"errors"
+	"fmt"
+	"strings"
+
+	"github.com/google/uuid"
+)
+
+var ErrInvalidUserID = errors.New("invalid User ID")
+
+type UserID struct {
+	value string
+}
+
+func NewUserID(value string) (UserID, error) {
+	v, err := uuid.Parse(value)
+	if err != nil {
+		return UserID{}, fmt.Errorf("%w: %s", ErrInvalidUserID, value)
+	}
+
+	return UserID{
+		value: v.String(),
+	}, nil
+}
+
+func (id UserID) String() string {
+	return id.value
+}
+
+var ErrEmptyUserName = errors.New("user name can't be empty")
+
+type UserName struct {
+	value string
+}
+
+func NewUserName(value string) (UserName, error) {
+	if len(value) == 0 {
+		return UserName{}, fmt.Errorf("%w: %s", ErrEmptyUserName, value)
+	}
+
+	return UserName{
+		value: value,
+	}, nil
+}
+
+func (name UserName) String() string {
+	return name.value
+}
+
+var ErrEmptyUserSurnames = errors.New("surnames can't be empty")
+
+type UserSurnames struct {
+	value string
+}
+
+func NewUserSurnames(value string) (UserSurnames, error) {
+	if len(value) == 0 {
+		return UserSurnames{}, fmt.Errorf("%w: %s", ErrEmptyUserSurnames, value)
+	}
+
+	return UserSurnames{
+		value: value,
+	}, nil
+}
+
+func (surnames UserSurnames) String() string {
+	return surnames.value
+}
+
+var ErrInvalidUserEmail = errors.New("email format is invalid")
+
+type UserEmail struct {
+	value string
+}
+
+func NewUserEmail(value string) (UserEmail, error) {
+	if !strings.Contains(value, "@") {
+		return UserEmail{}, fmt.Errorf("%w: %s", ErrInvalidUserEmail, value)
+	}
+	return UserEmail{
+		value: value,
+	}, nil
+}
+
+func (email UserEmail) String() string {
+	return email.value
+}
+
+const minPasswordLen = 10
+
+var ErrInvalidUserPassword = errors.New(fmt.Sprintf("password is not at least %d characters", minPasswordLen))
+
+type UserPassword struct {
+	value string
+}
+
+func NewUserPassword(value string) (UserPassword, error) {
+	if len(value) < minPasswordLen {
+		return UserPassword{}, fmt.Errorf("%w", ErrInvalidUserPassword)
+	}
+	//TODO: hash password
+	hashedPassword := strings.Repeat(value, 2)
+	return UserPassword{
+		value: hashedPassword,
+	}, nil
+}
+
+func (password UserPassword) String() string {
+	return password.value
+}
+
+type UserCountry struct {
+	value string
+}
+
+func NewUserCountry(value string) UserCountry {
+	return UserCountry{value}
+}
+
+func (country UserCountry) String() string {
+	return country.value
+}
+
+type UserPhone struct {
+	value string
+}
+
+func NewUserPhone(value string) UserPhone {
+	return UserPhone{value}
+}
+
+func (phone UserPhone) String() string {
+	return phone.value
+}
+
+type UserPostalCode struct {
+	value string
+}
+
+func NewUserPostalCode(value string) UserPostalCode {
+	return UserPostalCode{value}
+}
+
+func (postalCode UserPostalCode) String() string {
+	return postalCode.value
+}
+
+type User struct {
+	id             UserID
+	name           UserName
+	surnames       UserSurnames
+	email          UserEmail
+	hashedPassword UserPassword
+	country        UserCountry
+	phone          UserPhone
+	postalCode     UserPostalCode
+}
+
+func NewUser(id, name, surnames, email, password, country, phone, postalCode string) (User, error) {
+	idValidated, err := NewUserID(id)
+	if err != nil {
+		return User{}, err
+	}
+
+	nameValidated, err := NewUserName(name)
+	if err != nil {
+		return User{}, err
+	}
+
+	surnamesValidated, err := NewUserSurnames(surnames)
+	if err != nil {
+		return User{}, err
+	}
+
+	emailValidated, err := NewUserEmail(email)
+	if err != nil {
+		return User{}, err
+	}
+
+	passwordValidated, err := NewUserPassword(password)
+	if err != nil {
+		return User{}, err
+	}
+
+	countryValidated := NewUserCountry(country)
+
+	phoneValidated := NewUserPhone(phone)
+
+	postalCodeValidated := NewUserPostalCode(postalCode)
+
+	return User{
+		id:             idValidated,
+		name:           nameValidated,
+		surnames:       surnamesValidated,
+		email:          emailValidated,
+		hashedPassword: passwordValidated,
+		country:        countryValidated,
+		phone:          phoneValidated,
+		postalCode:     postalCodeValidated,
+	}, nil
+}
+
+func (u *User) ID() UserID {
+	return u.id
+}
+
+func (u *User) Name() UserName {
+	return u.name
+}
+
+func (u *User) Surnames() UserSurnames {
+	return u.surnames
+}
+
+func (u *User) Email() UserEmail {
+	return u.email
+}
+
+func (u *User) Password() UserPassword {
+	return u.hashedPassword
+}
+
+func (u *User) Country() UserCountry {
+	return u.country
+}
+
+func (u *User) Phone() UserPhone {
+	return u.phone
+}
+
+func (u *User) PostalCode() UserPostalCode {
+	return u.postalCode
+}
