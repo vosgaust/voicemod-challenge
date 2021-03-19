@@ -1,11 +1,13 @@
 package user
 
 import (
+	"crypto/sha1"
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/pbkdf2"
 )
 
 var ErrInvalidUserID = errors.New("invalid User ID")
@@ -100,10 +102,8 @@ func NewUserPassword(value string) (UserPassword, error) {
 	if len(value) < minPasswordLen {
 		return UserPassword{}, fmt.Errorf("%w", ErrInvalidUserPassword)
 	}
-	//TODO: hash password
-	hashedPassword := strings.Repeat(value, 2)
 	return UserPassword{
-		value: hashedPassword,
+		value: value,
 	}, nil
 }
 
@@ -200,6 +200,16 @@ func NewUser(id, name, surnames, email, password, country, phone, postalCode str
 		phone:          phoneValidated,
 		postalCode:     postalCodeValidated,
 	}, nil
+}
+
+func (user User) GetEncryptedPassword() string {
+	return strings.Repeat(user.Password().String(), 2)
+}
+
+func EncryptPassword(password, salt string) string {
+	fmt.Printf("Hashing: %s, %s\n", password, salt)
+	dk := pbkdf2.Key([]byte(password), []byte(salt), 4096, 32, sha1.New)
+	return fmt.Sprintf("%x", dk)
 }
 
 func (u *User) ID() UserID {

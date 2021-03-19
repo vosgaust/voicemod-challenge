@@ -4,14 +4,16 @@ import (
 	"fmt"
 
 	"github.com/kelseyhightower/envconfig"
+	"github.com/vosgaust/voicemod-challenge.git/internal/platform/auth"
 	"github.com/vosgaust/voicemod-challenge.git/internal/platform/storage/mysql"
 )
 
 type config struct {
-	Host string `default:"localhost"`
+	Host string `default:"0.0.0.0"`
 	Port uint   `default:"8080"`
 
-	DB mysql.Config
+	DB   mysql.Config
+	Auth auth.Config
 }
 
 func getConfig() (*config, error) {

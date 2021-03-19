@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/common/log"
+	uuid "github.com/satori/go.uuid"
 	"github.com/vosgaust/voicemod-challenge.git/internal/application/user"
 )
 
@@ -40,16 +41,17 @@ func CreateHandler(userService user.UserService) gin.HandlerFunc {
 
 		if err := ctx.BindJSON(&newUser); err != nil {
 			log.Errorf("failed creating user: %v", err)
-			ctx.JSON(http.StatusUnprocessableEntity, response{"ok", "User payload was incorrect"})
+			ctx.JSON(http.StatusUnprocessableEntity, response{"error", "User payload was incorrect"})
 			return
 		}
 
 		// TODO: generate this
-		userID := "1234567890"
+		log.Debug("Requesting to create new user")
+		userID := uuid.NewV1()
 
 		if err := userService.Create(
 			ctx,
-			userID,
+			userID.String(),
 			newUser.Name,
 			newUser.Surnames,
 			newUser.Email,
@@ -58,25 +60,57 @@ func CreateHandler(userService user.UserService) gin.HandlerFunc {
 			newUser.Phone,
 			newUser.PostalCode); err != nil {
 			//TODO: Filter errors and return response based on that error type
-			ctx.JSON(http.StatusInternalServerError, response{"error", "Failed to create new user"})
+			log.Error("Failed to create new user")
+			ctx.JSON(http.StatusInternalServerError, response{"error", ""})
+			return
 		}
 
 		ctx.JSON(http.StatusOK, response{"ok", ""})
 	}
 }
 
-func UpdateHandler() gin.HandlerFunc {
+func UpdateHandler(userService user.UserService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID := ctx.Param("user_id")
+
+		updatedUser := updateUserPayload{}
+
 		log.Infof("updating user: %s", userID)
-		// TODO: call update user service
+		if err := ctx.BindJSON(&updatedUser); err != nil {
+			log.Errorf("failed creating user: %v", err)
+			ctx.JSON(http.StatusUnprocessableEntity, response{"error", "User payload was incorrect"})
+			return
+		}
+
+		err := userService.Update(ctx,
+			userID,
+			updatedUser.Name,
+			updatedUser.Surnames,
+			updatedUser.Email,
+			updatedUser.Password,
+			updatedUser.NewPassword,
+			updatedUser.Country,
+			updatedUser.Phone,
+			updatedUser.PostalCode)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, response{"error", "Failed to update user"})
+			return
+		}
 		ctx.JSON(http.StatusOK, response{"ok", ""})
 	}
 }
 
-func DeleteHandler() gin.HandlerFunc {
+func DeleteHandler(userService user.UserService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// TODO: call update user service
+		userID := ctx.Param("user_id")
+
+		err := userService.Delete(ctx, userID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, response{"error", "Failed to update user"})
+			return
+		}
+
 		ctx.JSON(http.StatusOK, response{"ok", ""})
 	}
 }
