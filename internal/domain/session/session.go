@@ -1,15 +1,22 @@
 package session
 
+import "time"
+
 type Token struct {
-	value string
+	token          string
+	expirationTime time.Time
 }
 
-func NewToken(value string) Token {
-	return Token{value}
+func NewToken(value string, expirationTime time.Time) Token {
+	return Token{value, expirationTime}
 }
 
-func (token Token) String() string {
-	return token.value
+func (token Token) Token() string {
+	return token.token
+}
+
+func (token Token) ExpirationTime() time.Time {
+	return token.expirationTime
 }
 
 type SessionIdentity struct {

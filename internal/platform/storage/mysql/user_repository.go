@@ -29,7 +29,48 @@ func (r *UserRepository) Find(ctx context.Context, userID user.UserID) (*user.Us
 		Where(sq.Eq{"id": userID.String()}).
 		ToSql()
 
-	fmt.Println(q, args)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build the sql query: %v", err)
+	}
+
+	var dbUser sqlUser
+
+	err = r.db.QueryRowContext(ctx, q, args...).Scan(
+		&dbUser.ID,
+		&dbUser.Name,
+		&dbUser.Surnames,
+		&dbUser.Email,
+		&dbUser.Password,
+		&dbUser.Country,
+		&dbUser.Phone,
+		&dbUser.PostalCode)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch the user: %w", err)
+	}
+
+	user, err := user.NewUser(
+		dbUser.ID,
+		dbUser.Name,
+		dbUser.Surnames,
+		dbUser.Email,
+		dbUser.Password,
+		dbUser.Country,
+		dbUser.Phone,
+		dbUser.PostalCode)
+
+	if err != nil {
+		log.Errorf("Failed instanciating fetched user: %v", err)
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepository) FindByEmail(ctx context.Context, userEmail user.UserEmail) (*user.User, error) {
+	q, args, err := sq.Select(sqlUserColumns...).
+		From(sqlUserTable).
+		Where(sq.Eq{"email": userEmail.String()}).
+		ToSql()
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to build the sql query: %v", err)
@@ -47,12 +88,8 @@ func (r *UserRepository) Find(ctx context.Context, userID user.UserID) (*user.Us
 		&dbUser.Phone,
 		&dbUser.PostalCode)
 	if err != nil {
-		fmt.Println("Failed scanning shit?")
 		return nil, fmt.Errorf("failed to fetch the user: %w", err)
 	}
-
-	fmt.Println("PRINTING DBUSER")
-	fmt.Println(dbUser)
 
 	user, err := user.NewUser(
 		dbUser.ID,
@@ -68,8 +105,6 @@ func (r *UserRepository) Find(ctx context.Context, userID user.UserID) (*user.Us
 		log.Errorf("Failed instanciating fetched user: %v", err)
 		return nil, err
 	}
-
-	fmt.Printf("USer from db: %v", user)
 
 	return &user, nil
 }

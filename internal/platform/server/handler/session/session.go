@@ -3,6 +3,7 @@ package session
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vosgaust/voicemod-challenge.git/internal/application/session"
@@ -23,18 +24,21 @@ func LoginHandler(sessionService session.SessionService) gin.HandlerFunc {
 		login := loginPayload{}
 
 		if err := ctx.BindJSON(&login); err != nil {
-			fmt.Printf("failed creating user: %v", err)
+			fmt.Printf("failed binding user: %v", err)
 			ctx.JSON(http.StatusUnprocessableEntity, response{"error", "Login payload is incorrect"})
 			return
 		}
 
 		token, err := sessionService.Authenticate(ctx, login.Email, login.Password)
 		if err != nil {
+			fmt.Printf("Failed authenticating user: %v\n", err)
 			ctx.JSON(http.StatusInternalServerError, response{"error", ""})
 			return
 		}
 
-		ctx.SetCookie("token", token.String(), 5, "/", "127.0.0.1", false, false)
+		expirationTime := token.ExpirationTime().Unix() - time.Now().Unix()
+
+		ctx.SetCookie("token", token.Token(), int(expirationTime), "/", "127.0.0.1", false, false)
 
 		ctx.JSON(http.StatusOK, response{"ok", ""})
 	}

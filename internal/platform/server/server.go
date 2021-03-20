@@ -8,6 +8,7 @@ import (
 	sessionSvc "github.com/vosgaust/voicemod-challenge.git/internal/application/session"
 	userSvc "github.com/vosgaust/voicemod-challenge.git/internal/application/user"
 	"github.com/vosgaust/voicemod-challenge.git/internal/platform/server/handler/health"
+	"github.com/vosgaust/voicemod-challenge.git/internal/platform/server/handler/session"
 	"github.com/vosgaust/voicemod-challenge.git/internal/platform/server/handler/user"
 )
 
@@ -43,7 +44,5 @@ func (s *Server) registerRoutes() {
 	s.engine.PATCH("/user/:user_id", user.UpdateHandler(s.userService))
 	s.engine.DELETE("user/:user_id", user.DeleteHandler(s.userService))
 
-	s.engine.POST("/login")
-
-	// TODO: login handler
+	s.engine.POST("/login", session.LoginHandler(s.sessionService))
 }

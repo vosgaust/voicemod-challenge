@@ -15,6 +15,19 @@ func NewUserService(userRepository user.UserRepository) UserService {
 	return UserService{userRepository}
 }
 
+func (s *UserService) FindByEmail(ctx context.Context, email string) (user.User, error) {
+	userEmail, err := user.NewUserEmail(email)
+	if err != nil {
+		return user.User{}, nil
+	}
+	foundUser, err := s.userRepository.FindByEmail(ctx, userEmail)
+	if err != nil {
+		return user.User{}, nil
+	}
+
+	return *foundUser, nil
+}
+
 func (s *UserService) Find(ctx context.Context, id string) (user.User, error) {
 	userID, err := user.NewUserID(id)
 	if err != nil {
@@ -24,7 +37,7 @@ func (s *UserService) Find(ctx context.Context, id string) (user.User, error) {
 	if err != nil {
 		return user.User{}, nil
 	}
-	fmt.Printf("foun user: %v", foundUser)
+
 	return *foundUser, nil
 }
 

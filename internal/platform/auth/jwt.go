@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -30,13 +31,14 @@ func (s *JWT) GenerateSession(userSession session.Session) (session.Token, error
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString(s.Key)
+	fmt.Printf("Signing with: %s\n", s.Key)
+	tokenString, err := token.SignedString([]byte(s.Key))
 	//TODO: handle error
 	if err != nil {
 		return session.Token{}, err
 	}
 
-	return session.NewToken(tokenString), nil
+	return session.NewToken(tokenString, s.ExpirationTime), nil
 }
