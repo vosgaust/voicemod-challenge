@@ -31,17 +31,11 @@ func (id UserID) String() string {
 	return id.value
 }
 
-var ErrEmptyUserName = errors.New("user name can't be empty")
-
 type UserName struct {
 	value string
 }
 
 func NewUserName(value string) (UserName, error) {
-	if len(value) == 0 {
-		return UserName{}, fmt.Errorf("%w: %s", ErrEmptyUserName, value)
-	}
-
 	return UserName{
 		value: value,
 	}, nil
@@ -51,17 +45,11 @@ func (name UserName) String() string {
 	return name.value
 }
 
-var ErrEmptyUserSurnames = errors.New("surnames can't be empty")
-
 type UserSurnames struct {
 	value string
 }
 
 func NewUserSurnames(value string) (UserSurnames, error) {
-	if len(value) == 0 {
-		return UserSurnames{}, fmt.Errorf("%w: %s", ErrEmptyUserSurnames, value)
-	}
-
 	return UserSurnames{
 		value: value,
 	}, nil
@@ -92,7 +80,7 @@ func (email UserEmail) String() string {
 
 const minPasswordLen = 10
 
-var ErrInvalidUserPassword = errors.New(fmt.Sprintf("password is not at least %d characters", minPasswordLen))
+var ErrInvalidUserPassword = fmt.Errorf("password is not at least %d characters", minPasswordLen)
 
 type UserPassword struct {
 	value string
@@ -207,7 +195,6 @@ func (user User) GetEncryptedPassword() string {
 }
 
 func EncryptPassword(password, salt string) string {
-	fmt.Printf("Hashing: %s, %s\n", password, salt)
 	dk := pbkdf2.Key([]byte(password), []byte(salt), 4096, 32, sha1.New)
 	return fmt.Sprintf("%x", dk)
 }

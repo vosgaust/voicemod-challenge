@@ -1,11 +1,12 @@
 package session
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"github.com/vosgaust/voicemod-challenge.git/internal/application/session"
 )
 
@@ -24,16 +25,22 @@ func LoginHandler(sessionService session.SessionService) gin.HandlerFunc {
 		login := loginPayload{}
 
 		if err := ctx.BindJSON(&login); err != nil {
-			fmt.Printf("failed binding user: %v", err)
+			log.Infof("failed binding user: %v", err)
 			ctx.JSON(http.StatusUnprocessableEntity, response{"error", "Login payload is incorrect"})
 			return
 		}
 
 		token, err := sessionService.Authenticate(ctx, login.Email, login.Password)
 		if err != nil {
-			fmt.Printf("Failed authenticating user: %v\n", err)
-			ctx.JSON(http.StatusInternalServerError, response{"error", ""})
-			return
+			log.Infof("Failed authenticating user: %v", err)
+			switch {
+			case errors.Is(err, session.ErrIncorrectPassword), errors.Is(err, session.ErrUserNotFound):
+				ctx.JSON(http.StatusBadRequest, response{"error", "invalid password"})
+				return
+			default:
+				ctx.JSON(http.StatusInternalServerError, response{"error", ""})
+				return
+			}
 		}
 
 		expirationTime := token.ExpirationTime().Unix() - time.Now().Unix()

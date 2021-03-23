@@ -230,7 +230,7 @@ func Test_Create_User_Success(t *testing.T) {
 	assert.Equal(t, userName, user.name.value)
 	assert.Equal(t, userSurnames, user.surnames.value)
 	assert.Equal(t, userEmail, user.email.value)
-	assert.NotEqual(t, userPassword, user.hashedPassword.value)
+	assert.Equal(t, userPassword, user.hashedPassword.value)
 	assert.Equal(t, userPhone, user.phone.value)
 	assert.Equal(t, userPostalCode, user.postalCode.value)
 }

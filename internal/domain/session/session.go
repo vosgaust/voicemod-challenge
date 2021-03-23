@@ -63,6 +63,7 @@ func (s *Session) Password() SessionPassword {
 	return s.password
 }
 
+//go:generate mockery --case underscore --output ../../platform/auth/authmocks --outpkg authmocks --name SessionRepository
 type SessionRepository interface {
 	GenerateSession(session Session) (Token, error)
 }

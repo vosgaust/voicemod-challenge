@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
 	_ "github.com/go-sql-driver/mysql"
+	log "github.com/sirupsen/logrus"
 	"github.com/vosgaust/voicemod-challenge.git/internal/application/session"
 	"github.com/vosgaust/voicemod-challenge.git/internal/application/user"
 	"github.com/vosgaust/voicemod-challenge.git/internal/platform/auth"

@@ -2,9 +2,9 @@ package server
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	sessionSvc "github.com/vosgaust/voicemod-challenge.git/internal/application/session"
 	userSvc "github.com/vosgaust/voicemod-challenge.git/internal/application/user"
 	"github.com/vosgaust/voicemod-challenge.git/internal/platform/server/handler/health"
@@ -33,7 +33,7 @@ func New(host string, port uint, userService userSvc.UserService, sessionService
 }
 
 func (s *Server) Run() error {
-	log.Println("Server running at: ", s.address)
+	log.Infof("Server running at: %s", s.address)
 	return s.engine.Run(s.address)
 }
 

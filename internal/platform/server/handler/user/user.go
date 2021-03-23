@@ -1,12 +1,14 @@
 package user
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/common/log"
 	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"github.com/vosgaust/voicemod-challenge.git/internal/application/user"
+	domainuser "github.com/vosgaust/voicemod-challenge.git/internal/domain/user"
 )
 
 type response struct {
@@ -45,7 +47,6 @@ func CreateHandler(userService user.UserService) gin.HandlerFunc {
 			return
 		}
 
-		// TODO: generate this
 		log.Debug("Requesting to create new user")
 		userID := uuid.NewV1()
 
@@ -59,10 +60,17 @@ func CreateHandler(userService user.UserService) gin.HandlerFunc {
 			newUser.Country,
 			newUser.Phone,
 			newUser.PostalCode); err != nil {
-			//TODO: Filter errors and return response based on that error type
 			log.Error("Failed to create new user")
-			ctx.JSON(http.StatusInternalServerError, response{"error", ""})
-			return
+			switch {
+			case errors.Is(err, domainuser.ErrInvalidUserEmail):
+				ctx.JSON(http.StatusBadRequest, response{"error", "email format is invalid"})
+			case errors.Is(err, domainuser.ErrInvalidUserPassword):
+				ctx.JSON(http.StatusBadRequest, response{"error", "password format is invalid"})
+
+			default:
+				ctx.JSON(http.StatusInternalServerError, response{"error", ""})
+				return
+			}
 		}
 
 		ctx.JSON(http.StatusOK, response{"ok", ""})
@@ -94,8 +102,20 @@ func UpdateHandler(userService user.UserService) gin.HandlerFunc {
 			updatedUser.PostalCode)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, response{"error", "Failed to update user"})
-			return
+			switch {
+			case errors.Is(err, domainuser.ErrInvalidUserEmail):
+				ctx.JSON(http.StatusBadRequest, response{"error", "email format is invalid"})
+				return
+			case errors.Is(err, domainuser.ErrInvalidUserPassword):
+				ctx.JSON(http.StatusBadRequest, response{"error", "password format is invalid"})
+				return
+			case errors.Is(err, user.ErrIncorrectPassword):
+				ctx.JSON(http.StatusBadRequest, response{"error", "invalid password"})
+				return
+			default:
+				ctx.JSON(http.StatusInternalServerError, response{"error", ""})
+				return
+			}
 		}
 		ctx.JSON(http.StatusOK, response{"ok", ""})
 	}

@@ -7,7 +7,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/fatih/structs"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 	"github.com/vosgaust/voicemod-challenge.git/internal/domain/user"
 )
 
@@ -144,8 +144,6 @@ func (r *UserRepository) Update(ctx context.Context, user user.User) error {
 	q, args, err := buildUpdateArgument(sqlUser, builder).
 		Where(sq.Eq{"id": user.ID().String()}).
 		ToSql()
-
-	fmt.Println(q, args)
 
 	if err != nil {
 		return fmt.Errorf("failed to build the sql query: %v", err)
