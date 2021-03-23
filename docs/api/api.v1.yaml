@@ -1,0 +1,274 @@
+openapi: 3.0.3
+info:
+  description: VoiceMod challenge API
+  version: v1
+  title: VoiceMod V1
+
+components:
+  parameters:
+      userIDParam:
+        in: path
+        name: user_id
+        required: true
+        schema:
+          type: string
+        description: The user ID
+
+  schemas:
+    UserCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Ibai
+          description: The name of the new user
+        surnames:
+          type: string
+          example: Llanos
+          description: The surnames of the new user
+        email:
+          type: string
+          example: ibai@twitch.com
+          description: The email of the new user
+        password:
+          type: string
+          example: 1234567890
+          description: The password of the new user
+        country:
+          type: string
+          example: Spain
+          description: the country of the new user
+        phone:
+          type: string
+          example: "+34679879542"
+          description: the phone number of the new user
+        postal_code:
+          type: string
+          example: 43232423432X
+          description: the postal code fo the new user
+      required:
+        - email
+        - password
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Ibai
+          description: The name of the new user
+        surnames:
+          type: string
+          example: Llanos
+          description: The surnames of the new user
+        email:
+          type: string
+          example: ibai@twitch.com
+          description: The email of the new user
+        password:
+          type: string
+          example: 1234567890
+          description: The password of the new user
+        new_password:
+          type: string
+          example: 1234567890
+          description: The password of the new user
+        country:
+          type: string
+          example: Spain
+          description: the country of the new user
+        phone:
+          type: string
+          example: "+34679879542"
+          description: the phone number of the new user
+        postal_code:
+          type: string
+          example: 43232423432X
+          description: the postal code fo the new user
+      required:
+        - email
+        - password
+        - new_password
+
+    ResponseOK:
+      type: object
+      properties:
+        status:
+          type: string
+          description: status of the request
+          example: ok
+        message:
+          type: string
+          description: optional information message
+          example: user created
+
+    ResponseError:
+      type: object
+      properties:
+        status:
+          type: string
+          description: status of the request
+          example: error
+        message:
+          type: string
+          description: optional error message
+          example: user created
+
+    UserLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          example: ibai@twitch.com
+          description: The email of the user
+        password:
+          type: string
+          example: 1234567890
+          description: The password of the user
+
+paths:
+  /health:
+    get:
+      description: Health probe
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseOK'
+  /user:
+    post:
+      description: Create new user
+      tags:
+        - User
+      requestBody:
+        description: The payload to create the new user
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseOK'
+        '422':
+          description: Malformed payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+
+  /user/{user_id}:
+    patch:
+      description: Update user information
+      tags:
+        - User
+      parameters:
+        - $ref: '#/components/parameters/userIDParam'
+      requestBody:
+        description: The user's field to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseOK'
+        '422':
+          description: Malformed payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+    delete:
+      description: Delete user
+      tags:
+        - User
+      parameters:
+        - $ref: '#/components/parameters/userIDParam'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseOK'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+
+  /login:
+    post:
+      description: user login
+      tags:
+        - Login
+      requestBody:
+        description: The payload to login
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseOK'
+        '422':
+          description: Malformed payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
